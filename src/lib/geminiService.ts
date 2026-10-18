@@ -182,8 +182,8 @@ export async function analyzeWasteItem(params: {
     }
   }
 
-  // If a valid Gemini API key is present and image data is provided, execute real model inference
-  if (apiKey && apiKey.length > 10 && params.imageBase64) {
+  // If a valid Gemini API key is present and image or text description is provided, execute real model inference
+  if (apiKey && apiKey.length > 10 && (params.imageBase64 || (params.userDescription && params.userDescription !== "ping"))) {
     try {
       const ai = new GoogleGenAI({ apiKey });
 
@@ -223,23 +223,29 @@ Respond ONLY with a valid JSON object matching this schema:
   "materialComposition": "string"
 }`;
 
+      const contentParts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }> = [
+        { text: systemPrompt },
+      ];
+
+      if (params.imageBase64) {
+        contentParts.push({
+          inlineData: {
+            data: params.imageBase64.replace(/^data:image\/[a-z]+;base64,/, ""),
+            mimeType: params.imageMimeType || "image/jpeg",
+          },
+        });
+      }
+
+      if (params.userDescription) {
+        contentParts.push({ text: `User note / description: ${params.userDescription}` });
+      }
+
       const response = await ai.models.generateContent({
         model: modelName,
         contents: [
           {
             role: "user",
-            parts: [
-              { text: systemPrompt },
-              {
-                inlineData: {
-                  data: params.imageBase64.replace(/^data:image\/[a-z]+;base64,/, ""),
-                  mimeType: params.imageMimeType || "image/jpeg",
-                },
-              },
-              ...(params.userDescription
-                ? [{ text: `User note / description: ${params.userDescription}` }]
-                : []),
-            ],
+            parts: contentParts,
           },
         ],
       });

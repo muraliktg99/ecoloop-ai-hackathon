@@ -10,6 +10,19 @@ export async function POST(req: NextRequest) {
 
     const { imageBase64, imageMimeType, userDescription, selectedSampleId } = body;
 
+    // Fast status check ping from client Navbar
+    if (userDescription === "ping" && !imageBase64 && !selectedSampleId) {
+      const apiKey = process.env.GEMINI_API_KEY?.trim();
+      const hasKey = Boolean(apiKey && apiKey.length > 10);
+      return NextResponse.json({
+        success: true,
+        result: {
+          analysisMode: hasKey ? "live_gemini" : "simulated_demo",
+          model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+        },
+      });
+    }
+
     if (!imageBase64 && !userDescription && !selectedSampleId) {
       return NextResponse.json(
         {
