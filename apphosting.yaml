@@ -8,7 +8,7 @@ runConfig:
 
 env:
   - variable: GEMINI_MODEL
-    value: gemini-3.8-flash
+    value: gemini-3.5-flash-lite
   - variable: ENABLE_DEMO_MODE
     value: "true"
   - variable: COLLECTOR_ADMIN_PIN

@@ -20,9 +20,10 @@ export async function POST(req: NextRequest) {
         try {
           const { GoogleGenAI } = await import("@google/genai");
           const ai = new GoogleGenAI({ apiKey });
-          let discoveredModel = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+          let discoveredModel = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
           try {
             const pager = await ai.models.list();
+            const candidates: string[] = [];
             for await (const m of pager) {
               const mName = (m.name || "").replace(/^models\//, "");
               const anyM = m as Record<string, unknown>;
@@ -32,9 +33,20 @@ export async function POST(req: NextRequest) {
                 ? anyM.supportedGenerationMethods
                 : [];
               if ((!actions.length || actions.includes("generateContent")) && !mName.includes("embedding") && mName.includes("gemini")) {
-                discoveredModel = mName;
-                break;
+                candidates.push(mName);
               }
+            }
+            if (candidates.length > 0) {
+              const score = (name: string) => {
+                if (name === discoveredModel) return 100;
+                if (name.includes("3.5-flash-lite") || name.includes("3.5-lite")) return 98;
+                if (name.includes("3.1-flash-lite") || name.includes("3.1-lite")) return 95;
+                if (name.includes("flash-latest")) return 90;
+                if (name.includes("3.8-flash")) return 85;
+                if (name.includes("flash")) return 70;
+                return 50;
+              };
+              discoveredModel = candidates.sort((a, b) => score(b) - score(a))[0];
             }
           } catch {
             // Keep default candidate if list fails

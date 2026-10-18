@@ -173,7 +173,7 @@ export async function analyzeWasteItem(params: {
 }): Promise<ClassificationResult> {
   const scanId = `scan-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
   const apiKey = params.clientApiKey?.trim() || process.env.GEMINI_API_KEY?.trim();
-  const configuredModel = process.env.GEMINI_MODEL?.trim() || "gemini-3.8-flash";
+  const configuredModel = process.env.GEMINI_MODEL?.trim() || "gemini-3.5-flash-lite";
 
   // Check if user selected one of the curated demo samples directly
   if (params.selectedSampleId) {
@@ -190,13 +190,13 @@ export async function analyzeWasteItem(params: {
     try {
       const ai = new GoogleGenAI({ apiKey });
 
-      // Build model priority queue: configured model -> dynamically discovered models -> verified 2026 models
+      // Build model priority queue: configured model -> verified active quota models
       const defaultCandidates = [
         configuredModel,
-        "gemini-3.8-flash",
+        "gemini-3.5-flash-lite",
         "gemini-3.1-flash-lite",
         "gemini-flash-latest",
-        "gemini-2.5-flash",
+        "gemini-3.8-flash",
       ];
 
       let modelsToTry: string[] = [];
@@ -221,13 +221,13 @@ export async function analyzeWasteItem(params: {
           }
         }
         if (available.length > 0) {
-          // Sort available models prioritizing 3.8-flash, 3.1-flash-lite, and latest
+          // Sort available models prioritizing 3.5-flash-lite and 3.1-flash-lite (15 RPM / 500 RPD active quota)
           const score = (name: string) => {
             if (name === configuredModel) return 100;
-            if (name.includes("3.8-flash")) return 98;
+            if (name.includes("3.5-flash-lite") || name.includes("3.5-lite")) return 98;
             if (name.includes("3.1-flash-lite") || name.includes("3.1-lite")) return 95;
             if (name.includes("flash-latest")) return 90;
-            if (name.includes("2.5-flash")) return 80;
+            if (name.includes("3.8-flash")) return 85;
             if (name.includes("flash")) return 70;
             return 50;
           };
