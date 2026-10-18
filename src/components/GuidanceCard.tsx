@@ -41,7 +41,11 @@ export const GuidanceCard: React.FC<GuidanceCardProps> = ({
             <span className="text-xs uppercase font-extrabold tracking-wider px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center space-x-1">
               <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
               <span>
-                {result.analysisMode === "live_gemini" ? "Gemini 2.5 Vision" : "AI Verification Engine"}
+                {result.modelUsed
+                  ? `Gemini ${result.modelUsed.replace('gemini-', '')}`
+                  : result.analysisMode === "live_gemini"
+                  ? "Gemini Live Vision"
+                  : "AI Verification Engine"}
               </span>
             </span>
 

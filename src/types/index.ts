@@ -70,6 +70,7 @@ export interface ClassificationResult {
   eligiblePartners: RecoveryPartner[];
   analyzedAt: string;
   analysisMode: 'live_gemini' | 'simulated_demo';
+  modelUsed?: string;
 }
 
 export interface VerificationEvidence {

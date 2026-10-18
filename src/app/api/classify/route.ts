@@ -15,12 +15,57 @@ export async function POST(req: NextRequest) {
     if (userDescription === "ping" && !imageBase64 && !selectedSampleId) {
       const apiKey = clientApiKey || process.env.GEMINI_API_KEY?.trim();
       const hasKey = Boolean(apiKey && apiKey.length > 10);
+
+      if (hasKey && apiKey) {
+        try {
+          const { GoogleGenAI } = await import("@google/genai");
+          const ai = new GoogleGenAI({ apiKey });
+          let discoveredModel = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+          try {
+            const pager = await ai.models.list();
+            for await (const m of pager) {
+              const mName = (m.name || "").replace(/^models\//, "");
+              const anyM = m as Record<string, unknown>;
+              const actions = Array.isArray(anyM.supportedActions)
+                ? anyM.supportedActions
+                : Array.isArray(anyM.supportedGenerationMethods)
+                ? anyM.supportedGenerationMethods
+                : [];
+              if ((!actions.length || actions.includes("generateContent")) && !mName.includes("embedding") && mName.includes("gemini")) {
+                discoveredModel = mName;
+                break;
+              }
+            }
+          } catch {
+            // Keep default candidate if list fails
+          }
+          return NextResponse.json({
+            success: true,
+            result: {
+              analysisMode: "live_gemini",
+              model: discoveredModel,
+              hasKey: true,
+            },
+          });
+        } catch (pingErr: unknown) {
+          const errMsg = pingErr instanceof Error ? pingErr.message : String(pingErr);
+          return NextResponse.json({
+            success: false,
+            result: {
+              analysisMode: "simulated_demo",
+              hasKey: false,
+            },
+            error: errMsg,
+          });
+        }
+      }
+
       return NextResponse.json({
         success: true,
         result: {
-          analysisMode: hasKey ? "live_gemini" : "simulated_demo",
-          model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
-          hasKey,
+          analysisMode: "simulated_demo",
+          model: process.env.GEMINI_MODEL || "gemini-flash-latest",
+          hasKey: false,
         },
       });
     }

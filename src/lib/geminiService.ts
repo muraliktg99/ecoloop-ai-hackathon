@@ -173,7 +173,7 @@ export async function analyzeWasteItem(params: {
 }): Promise<ClassificationResult> {
   const scanId = `scan-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
   const apiKey = params.clientApiKey?.trim() || process.env.GEMINI_API_KEY?.trim();
-  const configuredModel = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash";
+  const configuredModel = process.env.GEMINI_MODEL?.trim() || "gemini-3.8-flash";
 
   // Check if user selected one of the curated demo samples directly
   if (params.selectedSampleId) {
@@ -185,12 +185,61 @@ export async function analyzeWasteItem(params: {
 
   // If a valid Gemini API key is present and image or text description is provided, execute real model inference
   if (apiKey && apiKey.length > 10 && (params.imageBase64 || (params.userDescription && params.userDescription !== "ping"))) {
-    const candidateModels = [configuredModel, "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
-    const uniqueModels = Array.from(new Set(candidateModels));
     let lastError: Error | null = null;
 
     try {
       const ai = new GoogleGenAI({ apiKey });
+
+      // Build model priority queue: configured model -> dynamically discovered models -> verified 2026 models
+      const defaultCandidates = [
+        configuredModel,
+        "gemini-3.8-flash",
+        "gemini-3.1-flash-lite",
+        "gemini-flash-latest",
+        "gemini-2.5-flash",
+      ];
+
+      let modelsToTry: string[] = [];
+
+      try {
+        const pager = await ai.models.list();
+        const available: string[] = [];
+        for await (const m of pager) {
+          const mName = (m.name || "").replace(/^models\//, "");
+          const anyM = m as Record<string, unknown>;
+          const actions = Array.isArray(anyM.supportedActions)
+            ? anyM.supportedActions
+            : Array.isArray(anyM.supportedGenerationMethods)
+            ? anyM.supportedGenerationMethods
+            : [];
+          if (
+            (!actions.length || actions.includes("generateContent")) &&
+            !mName.includes("embedding") &&
+            mName.includes("gemini")
+          ) {
+            available.push(mName);
+          }
+        }
+        if (available.length > 0) {
+          // Sort available models prioritizing 3.8-flash, 3.1-flash-lite, and latest
+          const score = (name: string) => {
+            if (name === configuredModel) return 100;
+            if (name.includes("3.8-flash")) return 98;
+            if (name.includes("3.1-flash-lite") || name.includes("3.1-lite")) return 95;
+            if (name.includes("flash-latest")) return 90;
+            if (name.includes("2.5-flash")) return 80;
+            if (name.includes("flash")) return 70;
+            return 50;
+          };
+          modelsToTry = available.sort((a, b) => score(b) - score(a));
+        }
+      } catch (listErr) {
+        console.warn("Dynamic model discovery bypassed, using curated 2026 model candidates:", listErr);
+      }
+
+      if (modelsToTry.length === 0) {
+        modelsToTry = Array.from(new Set(defaultCandidates));
+      }
 
       const systemPrompt = `You are EcoLoop AI, a specialized circular economy waste classification expert operating in Kerala, India.
 Analyze the user's waste item image and optional text description according to Kerala municipal rules (Suchitwa Mission, Haritha Karma Sena, Clean Kerala Company Ltd).
@@ -254,7 +303,7 @@ Respond ONLY with a valid JSON object matching this schema:
         contentParts.push({ text: `User note / description: ${params.userDescription}` });
       }
 
-      for (const modelToCall of uniqueModels) {
+      for (const modelToCall of modelsToTry) {
         try {
           const response = await ai.models.generateContent({
             model: modelToCall,
@@ -274,7 +323,7 @@ Respond ONLY with a valid JSON object matching this schema:
           const parsedData = JSON.parse(cleanJson);
           const validatedOutput = GeminiRawOutputSchema.parse(parsedData);
 
-          return formatResult(scanId, validatedOutput, "live_gemini");
+          return formatResult(scanId, validatedOutput, "live_gemini", modelToCall);
         } catch (err: unknown) {
           lastError = err instanceof Error ? err : new Error(String(err));
           console.warn(`Model ${modelToCall} attempt failed:`, lastError.message);
@@ -350,7 +399,8 @@ Respond ONLY with a valid JSON object matching this schema:
 function formatResult(
   scanId: string,
   raw: GeminiRawOutput,
-  mode: "live_gemini" | "simulated_demo"
+  mode: "live_gemini" | "simulated_demo",
+  modelUsed?: string
 ): ClassificationResult {
   const categoryInfo = KERALA_WASTE_CATEGORIES[raw.category] || KERALA_WASTE_CATEGORIES.other_unclassified;
   const guidance = getGuidanceForCategory(raw.category, raw.contaminationDetected);
@@ -376,5 +426,6 @@ function formatResult(
     eligiblePartners,
     analyzedAt: new Date().toISOString(),
     analysisMode: mode,
+    modelUsed,
   };
 }
