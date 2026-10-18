@@ -10,6 +10,7 @@ import { RequestsSection } from "@/components/RequestsSection";
 import { CollectorPortal } from "@/components/CollectorPortal";
 import { ImpactDashboard } from "@/components/ImpactDashboard";
 import { CreateRequestModal } from "@/components/CreateRequestModal";
+import { ApiKeyModal } from "@/components/ApiKeyModal";
 import { ClassificationResult, CollectionRequest } from "@/types";
 import { Recycle, Heart, ShieldCheck, ExternalLink } from "lucide-react";
 
@@ -37,6 +38,7 @@ export default function Home() {
   });
   const [requests, setRequests] = useState<CollectionRequest[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
   const [activeScanResult, setActiveScanResult] = useState<ClassificationResult | null>(null);
   const [isLiveGemini, setIsLiveGemini] = useState(false);
 
@@ -68,15 +70,23 @@ export default function Home() {
     }
 
     fetchRequests();
-    // Check if Gemini API key is configured
+
+    // Check if Gemini API key is configured (server or local client key)
+    const storedKey = typeof window !== "undefined" ? localStorage.getItem("ecoloop_gemini_api_key") : null;
     fetch("/api/classify", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userDescription: "ping" }),
+      headers: {
+        "Content-Type": "application/json",
+        ...(storedKey ? { "x-gemini-api-key": storedKey } : {}),
+      },
+      body: JSON.stringify({
+        userDescription: "ping",
+        clientApiKey: storedKey || undefined,
+      }),
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.result?.analysisMode === "live_gemini") {
+        if (data.result?.analysisMode === "live_gemini" || data.result?.hasKey) {
           setIsLiveGemini(true);
         }
       })
@@ -121,12 +131,18 @@ export default function Home() {
         lang={lang}
         setLang={handleLangChange}
         isLiveGemini={isLiveGemini}
+        onOpenApiKeyModal={() => setApiKeyModalOpen(true)}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {activeTab === "scanner" && (
-          <ScannerSection lang={lang} onCreateRequest={handleCreateRequest} />
+          <ScannerSection
+            lang={lang}
+            onCreateRequest={handleCreateRequest}
+            isLiveGemini={isLiveGemini}
+            onOpenApiKeyModal={() => setApiKeyModalOpen(true)}
+          />
         )}
 
         {activeTab === "directory" && <RecoveryDirectory lang={lang} />}
@@ -151,6 +167,15 @@ export default function Home() {
           <ImpactDashboard requests={requests} lang={lang} />
         )}
       </main>
+
+      {/* Gemini AI API Key Settings Modal */}
+      <ApiKeyModal
+        isOpen={apiKeyModalOpen}
+        onClose={() => setApiKeyModalOpen(false)}
+        lang={lang}
+        isLiveGemini={isLiveGemini}
+        onKeyUpdated={(isLive) => setIsLiveGemini(isLive)}
+      />
 
       {/* Create Request Modal */}
       <CreateRequestModal

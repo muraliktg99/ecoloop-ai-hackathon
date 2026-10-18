@@ -8,17 +8,19 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
+    const clientApiKey = req.headers.get("x-gemini-api-key")?.trim() || body.clientApiKey?.trim();
     const { imageBase64, imageMimeType, userDescription, selectedSampleId } = body;
 
     // Fast status check ping from client Navbar
     if (userDescription === "ping" && !imageBase64 && !selectedSampleId) {
-      const apiKey = process.env.GEMINI_API_KEY?.trim();
+      const apiKey = clientApiKey || process.env.GEMINI_API_KEY?.trim();
       const hasKey = Boolean(apiKey && apiKey.length > 10);
       return NextResponse.json({
         success: true,
         result: {
           analysisMode: hasKey ? "live_gemini" : "simulated_demo",
           model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+          hasKey,
         },
       });
     }
@@ -38,6 +40,7 @@ export async function POST(req: NextRequest) {
       imageMimeType,
       userDescription,
       selectedSampleId,
+      clientApiKey,
     });
 
     // Record scan in auditable store

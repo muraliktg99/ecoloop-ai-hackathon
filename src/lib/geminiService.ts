@@ -169,10 +169,11 @@ export async function analyzeWasteItem(params: {
   imageMimeType?: string;
   userDescription?: string;
   selectedSampleId?: string;
+  clientApiKey?: string;
 }): Promise<ClassificationResult> {
   const scanId = `scan-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
-  const modelName = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash";
+  const apiKey = params.clientApiKey?.trim() || process.env.GEMINI_API_KEY?.trim();
+  const configuredModel = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash";
 
   // Check if user selected one of the curated demo samples directly
   if (params.selectedSampleId) {
@@ -184,6 +185,10 @@ export async function analyzeWasteItem(params: {
 
   // If a valid Gemini API key is present and image or text description is provided, execute real model inference
   if (apiKey && apiKey.length > 10 && (params.imageBase64 || (params.userDescription && params.userDescription !== "ping"))) {
+    const candidateModels = [configuredModel, "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+    const uniqueModels = Array.from(new Set(candidateModels));
+    let lastError: Error | null = null;
+
     try {
       const ai = new GoogleGenAI({ apiKey });
 
@@ -193,19 +198,27 @@ Analyze the user's waste item image and optional text description according to K
 Classification Categories:
 - "dry_recyclable_plastic": Clean rigid PET/HDPE bottles, containers, buckets, hard plastics.
 - "dry_multilayer_plastic": Multi-layer packaging (MLP), milk pouches (e.g. Milma), chip wrappers, biscuit packets, sachets, flexible pouches.
-- "dry_recyclable_paper": Clean cardboard, boxes, newspapers, magazines, office paper.
+- "dry_recyclable_paper": Clean cardboard, corrugated packaging/delivery boxes (Amazon/Flipkart cartons), newspapers, magazines, office paper, paper bags.
 - "dry_recyclable_glass": Glass bottles, jars, cullet.
 - "dry_recyclable_metal": Tin cans, beverage aluminium cans, metal lids, scrap metal.
 - "wet_biodegradable": Food scraps, vegetable peels, fruit waste, coconut shells, garden waste.
 - "domestic_hazardous_ewaste": Batteries, CFL/LED bulbs, electronic gadgets, circuit boards, wires, chargers.
 - "sanitary_medical": Diapers, sanitary pads, band-aids, medicine blisters.
-- "other_unclassified": Composite or unknown materials that cannot be identified with high confidence.
+- "other_unclassified": Non-waste items, human portraits, selfies, living beings, animals, furniture, or unidentifiable items.
 
-Crucial instructions:
-1. Distinguish between rigid recyclable plastic and flexible multilayer plastic (MLP). Milk packets and metallized chip wrappers are strictly "dry_multilayer_plastic".
-2. Check for contamination: grease/oil on cardboard or food residue on plastic/paper.
-3. Be honest about uncertainty: if resolution or angle does not reveal exact polymer or layer composition, set uncertaintyLevel to "medium" or "high", explain reasons, and set requiresHumanReview to true.
-4. Provide both English and Malayalam descriptions and reasons.
+CRITICAL RULES:
+1. SELFIES / FACES / LIVING BEINGS / NON-WASTE:
+   If the photo depicts a person, human face, selfie, animal, or non-waste household furniture/landscape, you MUST classify it as "other_unclassified", set confidenceScore to 0.05, uncertaintyLevel to "high", requiresHumanReview to true, and explain in itemDescriptionEn: "Human Portrait / Non-waste Item Detected: The uploaded photo appears to be a person or non-waste object rather than recyclable material. Please scan household waste or recyclables for recovery routing." Provide Malayalam translation in itemDescriptionMl.
+2. CARDBOARD / DELIVERY BOXES:
+   If the photo shows corrugated cardboard, shipping/delivery cartons (e.g. Amazon, Flipkart), brown paper boxes, or packaging cartons, you MUST classify as "dry_recyclable_paper". NEVER classify cardboard as "dry_multilayer_plastic".
+   Check for contamination: if clear plastic packing tape or shipping labels are attached, set contaminationDetected to true, contaminationNotesEn to "Plastic shipping tape/labels present on cardboard. Please peel off packing tape and flatten box before Haritha Karma Sena collection."
+3. RIGID PLASTIC vs MULTILAYER PACKAGING (MLP):
+   - Rigid containers (PET water/soda bottles, shampoo bottles, buckets, food tubs) = "dry_recyclable_plastic".
+   - Flexible sachets, laminated chip wrappers, milk pouches = "dry_multilayer_plastic".
+4. CONFIDENCE & CONTAMINATION:
+   - Always assess contamination honestly (food residue, grease, liquids).
+   - If clean, set contaminationDetected to false.
+5. Provide both English and Malayalam descriptions and guidance.
 
 Respond ONLY with a valid JSON object matching this schema:
 {
@@ -228,9 +241,10 @@ Respond ONLY with a valid JSON object matching this schema:
       ];
 
       if (params.imageBase64) {
+        const cleanBase64 = params.imageBase64.replace(/^data:[^;]+;base64,/, "");
         contentParts.push({
           inlineData: {
-            data: params.imageBase64.replace(/^data:image\/[a-z]+;base64,/, ""),
+            data: cleanBase64,
             mimeType: params.imageMimeType || "image/jpeg",
           },
         });
@@ -240,33 +254,85 @@ Respond ONLY with a valid JSON object matching this schema:
         contentParts.push({ text: `User note / description: ${params.userDescription}` });
       }
 
-      const response = await ai.models.generateContent({
-        model: modelName,
-        contents: [
-          {
-            role: "user",
-            parts: contentParts,
-          },
-        ],
-      });
+      for (const modelToCall of uniqueModels) {
+        try {
+          const response = await ai.models.generateContent({
+            model: modelToCall,
+            contents: [
+              {
+                role: "user",
+                parts: contentParts,
+              },
+            ],
+            config: {
+              responseMimeType: "application/json",
+            },
+          });
 
-      const responseText = response.text || "";
-      // Strip markdown code fence if wrapped
-      const cleanJson = responseText.replace(/```json\n?|\n?```/g, "").trim();
-      const parsedData = JSON.parse(cleanJson);
-      const validatedOutput = GeminiRawOutputSchema.parse(parsedData);
+          const responseText = response.text || "";
+          const cleanJson = responseText.replace(/```json\n?|\n?```/g, "").trim();
+          const parsedData = JSON.parse(cleanJson);
+          const validatedOutput = GeminiRawOutputSchema.parse(parsedData);
 
-      return formatResult(scanId, validatedOutput, "live_gemini");
+          return formatResult(scanId, validatedOutput, "live_gemini");
+        } catch (err: unknown) {
+          lastError = err instanceof Error ? err : new Error(String(err));
+          console.warn(`Model ${modelToCall} attempt failed:`, lastError.message);
+          // Try next model candidate
+        }
+      }
+
+      // If all models failed
+      console.error("All Gemini model attempts failed:", lastError?.message);
+      const errMsg = lastError?.message || "Gemini inference unavailable";
+      return formatResult(
+        scanId,
+        {
+          itemDescriptionEn: "Live Gemini Analysis Encountered Error",
+          itemDescriptionMl: "തത്സമയ ജെമിനി വിശകലനം പരാജയപ്പെട്ടു",
+          category: "other_unclassified",
+          confidenceScore: 0.1,
+          uncertaintyLevel: "high",
+          uncertaintyReasonEn: `Gemini API reported: ${errMsg.substring(0, 160)}. Please verify your API key and quota in Google AI Studio.`,
+          uncertaintyReasonMl: "ജെമിനി API കണക്ഷൻ പരാജയപ്പെട്ടു. API കീ പരിശോധിക്കുക.",
+          contaminationDetected: false,
+          contaminationNotesEn: null,
+          contaminationNotesMl: null,
+          requiresHumanReview: true,
+          materialComposition: "Unverified (API Error)",
+        },
+        "simulated_demo"
+      );
     } catch (err: unknown) {
-      console.warn("Live Gemini API call failed or timed out. Falling back to simulated analysis:", err);
-      // Fallback gracefully below
+      console.error("Gemini SDK initialization error:", err);
     }
   }
 
-  // Offline Simulation / Fallback Mode
-  // If user provided a text description, match against smart heuristics
+  // If a custom image was uploaded, but no Gemini API key is configured:
+  if (params.imageBase64) {
+    return formatResult(
+      scanId,
+      {
+        itemDescriptionEn: "Custom Waste Image Uploaded (Gemini API Key Required for Live Vision)",
+        itemDescriptionMl: "ഫോട്ടോ അപ്‌ലോഡ് ചെയ്തു (തത്സമയ വിശകലനത്തിന് API കീ നൽകുക)",
+        category: "other_unclassified",
+        confidenceScore: 0.2,
+        uncertaintyLevel: "high",
+        uncertaintyReasonEn: "Live multimodal reasoning requires a Google Gemini API Key. Click 'Configure Gemini API Key' in the header to connect your free key from Google AI Studio.",
+        uncertaintyReasonMl: "ഈ ചിത്രം വിശകലനം ചെയ്യാൻ ഗൂഗിൾ ജെമിനി API കീ നൽകുക.",
+        contaminationDetected: false,
+        contaminationNotesEn: null,
+        contaminationNotesMl: null,
+        requiresHumanReview: true,
+        materialComposition: "Awaiting Gemini Vision API Key",
+      },
+      "simulated_demo"
+    );
+  }
+
+  // Offline Simulation / Text Heuristics Fallback Mode
   const textDesc = (params.userDescription || "").toLowerCase();
-  let matchedSample = SAMPLE_WASTE_ITEMS[0]; // Default Milma packet
+  let matchedSample = SAMPLE_WASTE_ITEMS[0]; // Milma packet
 
   if (textDesc.includes("bottle") || textDesc.includes("pet") || textDesc.includes("water") || textDesc.includes("plastic")) {
     matchedSample = SAMPLE_WASTE_ITEMS[1];

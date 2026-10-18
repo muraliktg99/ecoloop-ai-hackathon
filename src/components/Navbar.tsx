@@ -21,6 +21,7 @@ interface NavbarProps {
   lang: "en" | "ml";
   setLang: (lang: "en" | "ml") => void;
   isLiveGemini: boolean;
+  onOpenApiKeyModal?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -29,6 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   lang,
   setLang,
   isLiveGemini,
+  onOpenApiKeyModal,
 }) => {
   const navItems = [
     {
@@ -140,28 +142,35 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Right Action: Language Switch & Status Pill */}
           <div className="flex items-center space-x-2 shrink-0">
             {/* AI Status Badge on wide screens */}
-            <div className="hidden 2xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-slate-100/90 dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 whitespace-nowrap shrink-0">
+            <button
+              type="button"
+              onClick={onOpenApiKeyModal}
+              className="hidden 2xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-slate-100/90 dark:bg-slate-900/90 hover:border-emerald-500 border-slate-200 dark:border-slate-800 whitespace-nowrap shrink-0 transition-colors cursor-pointer"
+              title="Click to configure Gemini API Key"
+            >
               <span
                 className={`w-2 h-2 rounded-full ${
-                  isLiveGemini ? "bg-emerald-500 animate-pulse" : "bg-cyan-500"
+                  isLiveGemini ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
                 }`}
               />
               <span className="text-slate-700 dark:text-slate-300 text-[11px]">
                 {isLiveGemini ? "Gemini 2.5 Live" : "Demo Mode"}
               </span>
-            </div>
+            </button>
 
             {/* Compact live status dot on medium/large screens */}
-            <div
-              className="hidden md:flex 2xl:hidden items-center justify-center w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shrink-0"
-              title={isLiveGemini ? "Gemini 2.5 Live" : "Demo Simulation Mode"}
+            <button
+              type="button"
+              onClick={onOpenApiKeyModal}
+              className="hidden md:flex 2xl:hidden items-center justify-center w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 shrink-0 transition-colors cursor-pointer"
+              title={isLiveGemini ? "Gemini 2.5 Live — Click to configure" : "Demo Simulation Mode — Click to configure API Key"}
             >
               <span
                 className={`w-2 h-2 rounded-full ${
-                  isLiveGemini ? "bg-emerald-500 animate-pulse" : "bg-cyan-500"
+                  isLiveGemini ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
                 }`}
               />
-            </div>
+            </button>
 
             {/* Language Toggle Button */}
             <button
