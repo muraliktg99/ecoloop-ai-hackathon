@@ -329,7 +329,7 @@ add_content_box(
     slide14, Inches(0.8), Inches(1.0), Inches(8.4), Inches(5.0),
     "Official Submission Links",
     [
-        ("Live Deployed Prototype URL", "https://ecoloop-ai.loca.lt (Public HTTPS tunnel to live Next.js server; IP Bypass: 103.182.167.72)"),
+        ("Live Deployed Prototype URL", "https://3901e40689d1c1.lhr.life (Live Public HTTPS Prototype — zero password/interstitials)"),
         ("Local / Container Host URL", "http://localhost:3000 (Dockerized for Google Cloud Run via multi-stage Dockerfile)"),
         ("GitHub Source Code Repository", "https://github.com/krishnan/ecoloop-ai-hackathon (Contains source code, Vitest tests, Dockerfile, and docs)"),
         ("Public Video Demonstration (3-4 Mins)", "https://youtu.be/ecoloop-ai-demo (Demonstrating working scanner, collector scale verification & ledger)"),
