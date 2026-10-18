@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EcoLoop AI — Hackathon Proposal (AI Builder Cup)</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 20mm;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1e293b;
+      line-height: 1.6;
+      font-size: 11pt;
+      margin: 0;
+      padding: 0;
+    }
+    .header-banner {
+      border-bottom: 3px solid #059669;
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+    }
+    .badge {
+      display: inline-block;
+      background: #ecfdf5;
+      color: #065f46;
+      font-weight: 700;
+      font-size: 9pt;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      border: 1px solid #a7f3d0;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    h1 {
+      color: #065f46;
+      font-size: 24pt;
+      margin: 5px 0 10px 0;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+    .subtitle {
+      font-size: 13pt;
+      color: #475569;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      font-size: 9.5pt;
+      margin-top: 15px;
+    }
+    h2 {
+      color: #047857;
+      font-size: 14pt;
+      border-bottom: 1.5px solid #e2e8f0;
+      padding-bottom: 5px;
+      margin-top: 25px;
+      margin-bottom: 12px;
+    }
+    h3 {
+      color: #1e293b;
+      font-size: 11pt;
+      margin-top: 15px;
+      margin-bottom: 6px;
+    }
+    p, li {
+      text-align: justify;
+    }
+    ul {
+      margin-top: 6px;
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 4px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      font-size: 9pt;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 8px 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      font-weight: 700;
+    }
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    .callout {
+      background: #f0fdf4;
+      border-left: 4px solid #10b981;
+      padding: 12px 15px;
+      border-radius: 4px;
+      margin: 15px 0;
+      font-size: 10pt;
+    }
+    .footer {
+      margin-top: 30px;
+      padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 8.5pt;
+      color: #64748b;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-banner">
+    <div class="badge">AI Builder Cup — Sustainability Hackathon Proposal</div>
+    <h1>EcoLoop AI</h1>
+    <div class="subtitle">From Waste to Verified Value: AI-Powered Circular Economy Platform</div>
+    
+    <div class="meta-grid">
+      <div><strong>Target Jurisdiction:</strong> Kerala, India (Suchitwa Mission / LSGD)</div>
+      <div><strong>Core Technologies:</strong> Google Gemini 2.5 Flash, Cloud Run, Firestore</div>
+      <div><strong>Key Innovation:</strong> Physical Verification Protocol (Scale Handover)</div>
+      <div><strong>Status:</strong> Functional Tested Prototype Ready for Deployment</div>
+    </div>
+  </div>
+
+  <h2>1. Executive Summary</h2>
+  <p>
+    Over 2.01 billion tonnes of municipal solid waste are generated globally every year, with more than 33% mismanaged through open dumping or burning. While awareness campaigns encourage citizens to recycle, real-world circular economies suffer from two critical breakdowns:
+  </p>
+  <ul>
+    <li><strong>Household confusion and contamination:</strong> Citizens struggle to identify resin codes (e.g. rigid PET vs multi-layer polymer pouches), while food contamination (e.g. greasy pizza cartons) causes entire recycling batches to be rejected at collection hubs.</li>
+    <li><strong>Greenwashing and the data void:</strong> Ordinary sustainability apps report waste as "recycled" simply because an image was classified or a user clicked a button, leading to unverified green claims.</li>
+  </ul>
+  <div class="callout">
+    <strong>The Core Differentiator:</strong> EcoLoop AI introduces the <em>Verified Recovery Protocol</em>. It uses Google Gemini 2.5 Flash multimodal vision to analyze packaging, flags contamination, applies Kerala municipal guidelines in English and Malayalam, and connects residents to authorized collection bodies (Haritha Karma Sena). Crucially, <strong>zero environmental credit is generated until an authorized collector physically weighs the material on a certified scale, deducts wet contamination, and signs an auditable digital receipt.</strong>
+  </div>
+
+  <h2>2. Problem Statement & Kerala Context</h2>
+  <p>
+    In Kerala, India, the Local Self Government Department (LSGD) and <strong>Suchitwa Mission</strong> coordinate over 30,000 women collectors under the <strong>Haritha Karma Sena (HKS)</strong>. Despite this grassroots network, bottlenecks remain:
+  </p>
+  <ul>
+    <li><strong>Multi-layer Plastics (MLP):</strong> Flexible pouches (e.g. Milma milk packets) cannot be processed like rigid plastic bottles and must be routed to Clean Kerala Company Ltd (CKCL) for road-tar polymer shredding.</li>
+    <li><strong>Cross-Contamination:</strong> Unwashed milk pouches create sour odor and contaminate clean paper, resulting in doorstep rejection.</li>
+    <li><strong>Lack of Real-Time Auditability:</strong> Municipalities lack an empirical, tamper-evident record of true diverted kilograms vs estimated generation.</li>
+  </ul>
+
+  <h2>3. System Architecture & Google AI Integration</h2>
+  <p>
+    EcoLoop AI is built Google-first to ensure production-readiness, scalability, and transparent governance:
+  </p>
+  <ul>
+    <li><strong>Google Gemini 2.5 Flash (via <code>@google/genai</code>):</strong> Performs rapid multimodal image reasoning to detect material composition, assess surface grease/oil contamination, and return structured JSON schemas with calibrated uncertainty ratings.</li>
+    <li><strong>Deterministic Kerala Rules Engine:</strong> Cross-references Gemini outputs with official Suchitwa Mission protocols to provide step-by-step cleaning, drying, and storage rules in both English and Malayalam.</li>
+    <li><strong>Google Cloud Run:</strong> Hosts the containerized Next.js fullstack application with serverless auto-scaling and minimal idle carbon footprint.</li>
+    <li><strong>Dual-Mode Auditable Data Layer:</strong> Backed by Cloud Firestore for persistent audit logging, with an in-memory/local storage engine for instant demonstration readiness.</li>
+  </ul>
+
+  <h2>4. Environmental Impact & Measurement Methodology</h2>
+  <p>
+    All dashboard metrics are derived strictly from certified physical scale weights, utilizing conversion factors from the <strong>Central Pollution Control Board (CPCB) India 2022 Guidelines</strong> and the <strong>US EPA Waste Reduction Model (WARM) v16</strong>:
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Material Category</th>
+        <th>Avoided GHG (kg CO₂e/kg)</th>
+        <th>Conserved Energy (kWh/kg)</th>
+        <th>Conserved Water (L/kg)</th>
+        <th>Authoritative Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Rigid Plastic (PET/HDPE)</strong></td>
+        <td>1.80</td>
+        <td>5.70</td>
+        <td>18.0</td>
+        <td>CPCB / EPA WARM v16 Mechanical Recycling Model</td>
+      </tr>
+      <tr>
+        <td><strong>Multilayer Plastic (MLP)</strong></td>
+        <td>1.20</td>
+        <td>2.10</td>
+        <td>4.5</td>
+        <td>Clean Kerala Co. Polymer Road-Tar Offset</td>
+      </tr>
+      <tr>
+        <td><strong>Paper & Cardboard</strong></td>
+        <td>1.10</td>
+        <td>4.00</td>
+        <td>26.0</td>
+        <td>Indian Pulp & Paper Technical Association Audit</td>
+      </tr>
+      <tr>
+        <td><strong>Metals & Aluminium</strong></td>
+        <td>8.90</td>
+        <td>14.00</td>
+        <td>40.0</td>
+        <td>International Aluminium Institute / CPCB Audit</td>
+      </tr>
+      <tr>
+        <td><strong>Glass Containers</strong></td>
+        <td>0.31</td>
+        <td>0.42</td>
+        <td>1.2</td>
+        <td>Glass Packaging Institute Cullet Remelt Model</td>
+      </tr>
+      <tr>
+        <td><strong>Composted Organic Biomass</strong></td>
+        <td>0.50</td>
+        <td>0.10</td>
+        <td>0.0</td>
+        <td>Suchitwa Mission Aerobic Methane Avoidance</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>5. Scalability & Implementation Roadmap</h2>
+  <ul>
+    <li><strong>Phase 1 (Delivered MVP):</strong> Multimodal AI scanner, bilingual English/Malayalam UI, Haritha Karma Sena rules, Collector Verification Portal, and Auditable Impact Ledger.</li>
+    <li><strong>Phase 2 (City Pilot):</strong> Integration with Bluetooth-enabled Smart Scales used by Kudumbashree HKS leads in Kochi Corporation.</li>
+    <li><strong>Phase 3 (EPR Tokenization):</strong> Partnering with FMCG brands (Milma, Hindustan Unilever) to issue verified Extended Producer Responsibility (EPR) compliance credits.</li>
+    <li><strong>Phase 4 (National Expansion):</strong> Adapting the modular rules engine to municipal bye-laws across Bengaluru (BBMP), Chennai, and Mumbai (BMC).</li>
+  </ul>
+
+  <div class="footer">
+    EcoLoop AI — Submitted for the AI Builder Cup Sustainability Hackathon • Built with Google Gemini 2.5 on Google Cloud Platform
+  </div>
+
+</body>
+</html>

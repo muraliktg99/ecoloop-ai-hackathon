@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="100%" height="100%">
+  <rect width="200" height="240" fill="#f0f9ff" rx="16"/>
+  <!-- Pouch shape -->
+  <path d="M 40 40 Q 100 30 160 40 L 170 200 Q 100 215 30 200 Z" fill="#2563eb" stroke="#1d4ed8" stroke-width="4"/>
+  <!-- Pouch white label band -->
+  <path d="M 37 90 Q 100 100 163 90 L 167 155 Q 100 165 33 155 Z" fill="#ffffff"/>
+  <!-- Text Milma Style -->
+  <text x="100" y="125" font-family="Arial, sans-serif" font-weight="900" font-size="22" fill="#1e3a8a" text-anchor="middle">MILMA</text>
+  <text x="100" y="145" font-family="Arial, sans-serif" font-weight="bold" font-size="12" fill="#0284c7" text-anchor="middle">PASTEURISED MILK</text>
+  <!-- Seal lines -->
+  <line x1="40" y1="45" x2="160" y2="45" stroke="#93c5fd" stroke-width="2" stroke-dasharray="4,2"/>
+  <line x1="32" y1="195" x2="168" y2="195" stroke="#93c5fd" stroke-width="2" stroke-dasharray="4,2"/>
+  <!-- Droplet icon -->
+  <circle cx="100" cy="70" r="10" fill="#60a5fa"/>
+  <path d="M 100 55 C 95 62 90 70 100 75 C 110 70 105 62 100 55 Z" fill="#ffffff"/>
+</svg>

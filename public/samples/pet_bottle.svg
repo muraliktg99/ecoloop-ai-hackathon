@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="100%" height="100%">
+  <rect width="200" height="240" fill="#ecfdf5" rx="16"/>
+  <!-- Bottle Neck & Cap -->
+  <rect x="86" y="24" width="28" height="20" rx="3" fill="#059669" stroke="#047857" stroke-width="2"/>
+  <rect x="91" y="44" width="18" height="16" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+  <!-- Bottle Body -->
+  <path d="M 91 60 C 65 75 55 100 55 130 L 55 195 Q 55 210 70 210 L 130 210 Q 145 210 145 195 L 145 130 C 145 100 135 75 109 60 Z" fill="#d1fae5" stroke="#10b981" stroke-width="3"/>
+  <!-- Water Waves / Label -->
+  <rect x="56" y="125" width="88" height="40" fill="#10b981" rx="4"/>
+  <text x="100" y="148" font-family="Arial, sans-serif" font-weight="bold" font-size="14" fill="#ffffff" text-anchor="middle">AQUA PET</text>
+  <text x="100" y="160" font-family="Arial, sans-serif" font-size="9" fill="#d1fae5" text-anchor="middle">100% RECYCLABLE</text>
+  <!-- Recycling symbol -->
+  <text x="100" y="105" font-family="Arial, sans-serif" font-weight="900" font-size="18" fill="#059669" text-anchor="middle">♳ 1</text>
+</svg>
