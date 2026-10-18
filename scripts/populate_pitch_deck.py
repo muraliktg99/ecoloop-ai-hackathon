@@ -331,7 +331,7 @@ add_content_box(
     [
         ("Live Deployed Prototype URL", "https://de73c714fd0228.lhr.life (Live Public HTTPS Prototype — zero password/interstitials)"),
         ("Local / Container Host URL", "http://localhost:3000 (Dockerized for Google Cloud Run via multi-stage Dockerfile)"),
-        ("GitHub Source Code Repository", "https://github.com/krishnan/ecoloop-ai-hackathon (Contains source code, Vitest tests, Dockerfile, and docs)"),
+        ("GitHub Source Code Repository", "https://github.com/muraliktg99/ecoloop-ai-hackathon (Contains source code, Vitest tests, Dockerfile, and docs)"),
         ("Public Video Demonstration (3-4 Mins)", "https://youtu.be/ecoloop-ai-demo (Demonstrating working scanner, collector scale verification & ledger)"),
         ("Video Script & Timing Breakdown", "docs/demo-script.md (Strict 3:15 minute timed narration and screen-action walkthrough)"),
         ("Submission Proposal PDF", "docs/EcoLoop_AI_Hackathon_Proposal.pdf (Comprehensive 114KB vector proposal document)"),
