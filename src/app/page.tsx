@@ -14,8 +14,27 @@ import { ClassificationResult, CollectionRequest } from "@/types";
 import { Recycle, Heart, ShieldCheck, ExternalLink } from "lucide-react";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("scanner");
-  const [lang, setLang] = useState<"en" | "ml">("en");
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab") as ActiveTab;
+      if (tabParam && ["scanner", "directory", "requests", "collector", "impact"].includes(tabParam)) {
+        return tabParam;
+      }
+    }
+    return "scanner";
+  });
+
+  const [lang, setLang] = useState<"en" | "ml">(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const langParam = params.get("lang");
+      if (langParam === "ml" || langParam === "en") {
+        return langParam;
+      }
+    }
+    return "en";
+  });
   const [requests, setRequests] = useState<CollectionRequest[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [activeScanResult, setActiveScanResult] = useState<ClassificationResult | null>(null);
@@ -35,6 +54,19 @@ export default function Home() {
   };
 
   useEffect(() => {
+    // Parse deep-link query parameters
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab") as ActiveTab;
+      if (tabParam && ["scanner", "directory", "requests", "collector", "impact"].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+      const langParam = params.get("lang");
+      if (langParam === "ml" || langParam === "en") {
+        setLang(langParam);
+      }
+    }
+
     fetchRequests();
     // Check if Gemini API key is configured
     fetch("/api/classify", {
@@ -51,6 +83,25 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
+  // Update URL search parameters when tab or language changes
+  const handleTabChange = (tab: ActiveTab) => {
+    setActiveTab(tab);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", tab);
+      window.history.replaceState({}, "", url.toString());
+    }
+  };
+
+  const handleLangChange = (newLang: "en" | "ml") => {
+    setLang(newLang);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("lang", newLang);
+      window.history.replaceState({}, "", url.toString());
+    }
+  };
+
   const handleCreateRequest = (result: ClassificationResult) => {
     setActiveScanResult(result);
     setModalOpen(true);
@@ -66,9 +117,9 @@ export default function Home() {
       {/* Top Navigation */}
       <Navbar
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
         lang={lang}
-        setLang={setLang}
+        setLang={handleLangChange}
         isLiveGemini={isLiveGemini}
       />
 

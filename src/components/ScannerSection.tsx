@@ -205,25 +205,25 @@ export const ScannerSection: React.FC<ScannerSectionProps> = ({
               <button
                 key={sample.id}
                 onClick={() => handleSelectSample(sample.id)}
-                className={`p-3 rounded-xl border text-left transition-all flex flex-col items-center justify-center space-y-2 group cursor-pointer ${
+                className={`p-3 rounded-xl border text-center transition-all duration-200 flex flex-col items-center justify-between space-y-2 group cursor-pointer ${
                   isSelected
-                    ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 shadow-md ring-2 ring-emerald-500"
-                    : "border-slate-200 dark:border-slate-800 hover:border-emerald-400 bg-white/60 dark:bg-slate-900/60"
+                    ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 shadow-md ring-2 ring-emerald-500 scale-[1.02]"
+                    : "border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-500 bg-white/60 dark:bg-slate-900/60 hover:-translate-y-0.5 hover:shadow-sm"
                 }`}
               >
-                <div className="w-16 h-16 rounded-lg overflow-hidden flex items-center justify-center bg-slate-100 dark:bg-slate-800 p-1 group-hover:scale-105 transition-transform">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden flex items-center justify-center bg-slate-100/90 dark:bg-slate-800/90 p-1.5 group-hover:scale-108 transition-transform">
                   <img
                     src={sample.imageUrl}
                     alt={sample.nameEn}
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <div className="text-center">
-                  <div className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1">
+                <div className="w-full">
+                  <div className="text-xs font-extrabold text-slate-800 dark:text-slate-200 line-clamp-2 min-h-[32px] flex items-center justify-center leading-tight">
                     {lang === "en" ? sample.nameEn : sample.nameMl}
                   </div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-mono">
-                    {sample.category.replace("dry_", "").replace("recyclable_", "")}
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded font-mono font-bold mt-1 inline-block uppercase">
+                    {sample.category.replace("dry_", "").replace("recyclable_", "").replace("_", " ")}
                   </span>
                 </div>
               </button>
@@ -261,15 +261,19 @@ export const ScannerSection: React.FC<ScannerSectionProps> = ({
             </p>
           </div>
         ) : (
-          <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4 min-h-[220px]">
+          <div className="relative rounded-2xl overflow-hidden border border-emerald-500/30 dark:border-emerald-500/20 bg-linear-to-b from-emerald-500/5 to-transparent dark:bg-slate-900/60 flex items-center justify-center p-6 min-h-[240px]">
+            <span className="absolute top-3 left-3 text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-600 text-white shadow-xs flex items-center space-x-1">
+              <Sparkles className="w-3 h-3" />
+              <span>{lang === "en" ? "Ready for Analysis" : "പരിശോധനയ്ക്ക് തയ്യാർ"}</span>
+            </span>
             <img
               src={previewUrl}
               alt="Selected waste item"
-              className="max-h-72 max-w-full object-contain rounded-lg shadow-sm"
+              className="max-h-64 max-w-full object-contain rounded-xl shadow-md transition-transform duration-300 hover:scale-102"
             />
             <button
               onClick={handleReset}
-              className="absolute top-3 right-3 p-1.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white transition-colors cursor-pointer"
+              className="absolute top-3 right-3 p-1.5 rounded-full bg-slate-800/80 hover:bg-rose-600 text-white transition-all shadow-md cursor-pointer hover:scale-110"
               title="Remove image"
             >
               <X className="w-4 h-4" />
@@ -295,7 +299,7 @@ export const ScannerSection: React.FC<ScannerSectionProps> = ({
                   ? "e.g. Empty Milma 500ml milk packet, washed but has greasy cap"
                   : "ഉദാ: മിൽമ പാൽ കവർ, കഴുകി വൃത്തിയാക്കിയത്"
               }
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-900/70 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-900/70 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500 transition-all"
             />
           </div>
         </div>
@@ -313,10 +317,10 @@ export const ScannerSection: React.FC<ScannerSectionProps> = ({
           <button
             onClick={handleAnalyze}
             disabled={isAnalyzing}
-            className={`w-full py-3.5 rounded-xl text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center space-x-2 cursor-pointer ${
+            className={`w-full py-3.5 rounded-xl text-white font-black text-sm shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 cursor-pointer relative overflow-hidden ${
               isAnalyzing
-                ? "bg-slate-500 cursor-not-allowed"
-                : "bg-linear-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 shadow-emerald-600/30 hover:scale-[1.01]"
+                ? "bg-slate-500 cursor-not-allowed opacity-80"
+                : "bg-linear-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:via-teal-700 hover:to-emerald-800 shadow-emerald-600/30 hover:scale-[1.01] active:scale-[0.99]"
             }`}
           >
             {isAnalyzing ? (
@@ -326,7 +330,7 @@ export const ScannerSection: React.FC<ScannerSectionProps> = ({
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-4 h-4 text-emerald-200 animate-pulse" />
                 <span>
                   {lang === "en"
                     ? "Classify with Google Gemini AI"
